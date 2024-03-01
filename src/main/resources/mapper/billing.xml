@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.SubscribedBilling.dao.bliingDAO">
+
+<insert id="daliy_blilling">
+
+    insert into billing_history (userID,productIdx,start_date,end_date,daily_price)
+
+    select bh.userID,bh.productIdx,bh.start_date,bh.end_date,bh.daily_price
+    From billing_history bh
+
+             JOIN (
+        SELECT
+            userID,
+            MAX(creation_date) AS max_creation_date
+        FROM
+            billing_history
+        GROUP BY
+            userID
+    ) AS latest_dates ON bh.userID = latest_dates.userID
+        AND bh.creation_date = latest_dates.max_creation_date
+    where end_date is null
+
+
+</insert>
+
+    <select id="getDailyBillingList" parameterType="map" resultType="map">
+
+        select bh.creation_date,bh.userID,pi.productName,start_date,end_date,daily_price
+        from billing_history bh
+        join productInfo pi on pi.idx = bh.productIdx
+        where userID =#{userID}
+
+
+    </select>
+
+
+    <select id="getMonthBillingList" parameterType="map" resultType="map">
+
+        select max(bh.creation_date) as creation_date ,bh.userID,pi.productName,
+               max(bh.start_date) as start_date ,max(bh.end_date) as end_date,SUM(daily_price) as Month_price
+        from billing_history bh
+                 join productInfo pi on pi.idx = bh.productIdx
+        where bh.userID =#{userID} and MONTH(bh.creation_date) = #{Month}
+        group by pi.productName
+
+    </select>
+
+
+    <select id="getYearBillingList" parameterType="map" resultType="map">
+
+        select max(bh.creation_date) as creation_date,bh.userID,pi.productName,
+            max(bh.start_date) as start_date,max(bh.end_date) as end_date,SUM(daily_price) as Year_price
+        from billing_history bh
+            join productInfo pi on pi.idx = bh.productIdx
+        where bh.userID =#{userID} and Year(bh.creation_date) = #{Year}
+        group by pi.productName
+
+    </select>
+
+
+
+
+
+</mapper>

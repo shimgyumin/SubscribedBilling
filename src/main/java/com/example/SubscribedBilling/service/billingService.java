@@ -54,7 +54,7 @@ public class billingService {
             result.put("status", "0000");
 
         }catch (Exception e){
-
+            log.error("Exception = {}",e);
             log.error("Exception = {}",e);
             result.put("status", "0001");
 
